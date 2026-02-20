@@ -63,6 +63,7 @@
 - [project/_index.md](project/_index.md)
   - Tài liệu chi tiết theo trạng thái code hiện tại
   - Bao gồm implementation map, split tool UI, build/run
+  - Bao gồm guide tích hợp/sử dụng lib và quy trình thêm command tool
 
 ---
 
