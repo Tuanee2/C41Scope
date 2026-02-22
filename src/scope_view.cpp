@@ -211,8 +211,75 @@ void ScopeView::setChannelIds(const QVariantList& channelIds)
     m_channelIdValues = std::move(normalizedIds);
     m_hasChannelFilter = true;
 
+    std::vector<int> filteredHiddenIds;
+    filteredHiddenIds.reserve(m_hiddenChannelIdValues.size());
+    for (const int hiddenId : m_hiddenChannelIdValues) {
+        if (std::find(m_channelIdValues.begin(), m_channelIdValues.end(), hiddenId) != m_channelIdValues.end()) {
+            filteredHiddenIds.push_back(hiddenId);
+        }
+    }
+
+    if (filteredHiddenIds != m_hiddenChannelIdValues) {
+        m_hiddenChannelIdValues = std::move(filteredHiddenIds);
+        m_hiddenChannelIds.clear();
+        m_hiddenChannelIds.reserve(static_cast<qsizetype>(m_hiddenChannelIdValues.size()));
+        for (const int hiddenId : m_hiddenChannelIdValues) {
+            m_hiddenChannelIds.push_back(hiddenId);
+        }
+        emit hiddenChannelIdsChanged();
+    }
+
     markViewDirty();
     emit channelIdsChanged();
+}
+
+QVariantList ScopeView::hiddenChannelIds() const
+{
+    return m_hiddenChannelIds;
+}
+
+void ScopeView::setHiddenChannelIds(const QVariantList& channelIds)
+{
+    std::vector<int> normalizedIds;
+    normalizedIds.reserve(static_cast<std::size_t>(channelIds.size()));
+    for (const QVariant& value : channelIds) {
+        bool ok = false;
+        const int channelId = value.toInt(&ok);
+        if (!ok) {
+            continue;
+        }
+
+        if (std::find(normalizedIds.begin(), normalizedIds.end(), channelId) == normalizedIds.end()) {
+            normalizedIds.push_back(channelId);
+        }
+    }
+
+    std::sort(normalizedIds.begin(), normalizedIds.end());
+
+    if (m_hasChannelFilter) {
+        normalizedIds.erase(
+            std::remove_if(
+                normalizedIds.begin(),
+                normalizedIds.end(),
+                [this](int channelId) {
+                    return std::find(m_channelIdValues.begin(), m_channelIdValues.end(), channelId) == m_channelIdValues.end();
+                }),
+            normalizedIds.end());
+    }
+
+    if (normalizedIds == m_hiddenChannelIdValues) {
+        return;
+    }
+
+    m_hiddenChannelIdValues = std::move(normalizedIds);
+    m_hiddenChannelIds.clear();
+    m_hiddenChannelIds.reserve(static_cast<qsizetype>(m_hiddenChannelIdValues.size()));
+    for (const int channelId : m_hiddenChannelIdValues) {
+        m_hiddenChannelIds.push_back(channelId);
+    }
+
+    markViewDirty();
+    emit hiddenChannelIdsChanged();
 }
 
 void ScopeView::zoomIn()
@@ -324,9 +391,40 @@ QSGNode* ScopeView::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData*)
     req.tMin = tMin;
     req.tMax = tMax;
     req.resolutionHint = widthPx;
-    req.channels.all = !m_hasChannelFilter;
-    if (!req.channels.all) {
-        req.channels.channelIds = m_channelIdValues;
+    req.channels.all = true;
+
+    if (m_hasChannelFilter) {
+        req.channels.all = false;
+        if (m_hiddenChannelIdValues.empty()) {
+            req.channels.channelIds = m_channelIdValues;
+        } else {
+            req.channels.channelIds.reserve(m_channelIdValues.size());
+            for (const int channelId : m_channelIdValues) {
+                if (!std::binary_search(m_hiddenChannelIdValues.begin(), m_hiddenChannelIdValues.end(), channelId)) {
+                    req.channels.channelIds.push_back(channelId);
+                }
+            }
+        }
+    } else if (!m_hiddenChannelIdValues.empty()) {
+        req.channels.all = false;
+        const QVariantList allChannelIds = m_controller->channelIds();
+        req.channels.channelIds.reserve(static_cast<std::size_t>(allChannelIds.size()));
+        for (const QVariant& value : allChannelIds) {
+            bool ok = false;
+            const int channelId = value.toInt(&ok);
+            if (!ok) {
+                continue;
+            }
+
+            if (std::binary_search(m_hiddenChannelIdValues.begin(), m_hiddenChannelIdValues.end(), channelId)) {
+                continue;
+            }
+
+            if (std::find(req.channels.channelIds.begin(), req.channels.channelIds.end(), channelId) == req.channels.channelIds.end()) {
+                req.channels.channelIds.push_back(channelId);
+            }
+        }
+        std::sort(req.channels.channelIds.begin(), req.channels.channelIds.end());
     }
 
     ScopeSnapshot snapshot = m_controller->snapshot(req);

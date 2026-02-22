@@ -49,6 +49,7 @@ qt_add_qml_module(appC41Scope
         Main.qml
         qml/scopeui/ScopeWorkbench.qml
         qml/scopeui/ScopeSplitGrid.qml
+        qml/scopeui/ScopeLegend.qml
         qml/scopeui/ScopeToolbar.qml
         qml/scopeui/ScopeSplitPicker.qml
         qml/scopeui/ScopeCommandMenu.qml

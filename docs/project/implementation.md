@@ -105,6 +105,7 @@ Files:
 - `Main.qml`
 - `qml/scopeui/ScopeWorkbench.qml`
 - `qml/scopeui/ScopeSplitGrid.qml`
+- `qml/scopeui/ScopeLegend.qml`
 - `qml/scopeui/ScopeToolbar.qml`
 - `qml/scopeui/ScopeSplitPicker.qml`
 - `qml/scopeui/ScopeCommandMenu.qml`
@@ -116,6 +117,12 @@ Thiết kế:
 - Dev dùng scope trong QML theo kiểu component-level, không cần giữ toàn bộ logic trong một file lớn.
 - `ScopeWorkbench` giữ state hiển thị menu/popup (`commandMenuVisible`, `splitPickerVisible`, `commandResultVisible`) và đóng/mở qua signal từ component con để tránh phá vỡ property binding.
 - Toolbar hiển thị trạng thái scope active (`Follow` hoặc `Manual`) cùng `timeWindow`.
+- Toolbar nằm trong một `toolStrip` riêng phía trên grid scope, không overlay lên scope đầu tiên.
+- Context menu có thêm trang `Inputs` để chọn nhanh `All` hoặc bật/tắt từng channel trên scope active.
+- `ScopeView` có thêm trạng thái `hiddenChannelIds`; `ScopeLegend` click label sẽ toggle danh sách ẩn này.
+- Channel bị ẩn vẫn giữ label ở legend, hiển thị strike-through để phân biệt với channel đang hiển thị.
+- Layout legend dùng kích thước nội tại theo nội dung để tránh co 0-width khi render overlay.
+- Binding label legend dùng `channelId` cố định theo từng dòng để tránh trạng thái `CH undefined`.
 
 ## API/Docs Alignment Notes
 

@@ -23,6 +23,7 @@ class ScopeView : public QQuickItem {
     Q_PROPERTY(bool liveMode READ liveMode WRITE setLiveMode NOTIFY liveModeChanged)
     Q_PROPERTY(bool showGrid READ showGrid WRITE setShowGrid NOTIFY showGridChanged)
     Q_PROPERTY(QVariantList channelIds READ channelIds WRITE setChannelIds NOTIFY channelIdsChanged)
+    Q_PROPERTY(QVariantList hiddenChannelIds READ hiddenChannelIds WRITE setHiddenChannelIds NOTIFY hiddenChannelIdsChanged)
 
 public:
     explicit ScopeView(QQuickItem* parent = nullptr);
@@ -45,6 +46,8 @@ public:
 
     QVariantList channelIds() const;
     void setChannelIds(const QVariantList& channelIds);
+    QVariantList hiddenChannelIds() const;
+    void setHiddenChannelIds(const QVariantList& channelIds);
 
     Q_INVOKABLE void zoomIn();
     Q_INVOKABLE void zoomOut();
@@ -59,6 +62,7 @@ signals:
     void liveModeChanged();
     void showGridChanged();
     void channelIdsChanged();
+    void hiddenChannelIdsChanged();
 
 protected:
     QSGNode* updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData*) override;
@@ -92,6 +96,8 @@ private:
     bool m_hasChannelFilter = false;
     QVariantList m_channelIds;
     std::vector<int> m_channelIdValues;
+    QVariantList m_hiddenChannelIds;
+    std::vector<int> m_hiddenChannelIdValues;
 
     std::vector<float> m_colMin;
     std::vector<float> m_colMax;

@@ -3,7 +3,8 @@
 ## View Tool Menu
 
 Vị trí:
-- Góc trên bên trái vùng scope (render trong `qml/scopeui/ScopeToolbar.qml`)
+- Trên một thanh công cụ riêng ở phía trên vùng scope (không nằm trong scope nào).
+- Cụ thể: `ScopeWorkbench` render `toolStrip`, và `ScopeToolbar` nằm trong thanh này.
 
 Nguồn dữ liệu menu:
 - `scopeController.viewToolItems`
@@ -53,6 +54,7 @@ Pan drag:
 
 Component tách riêng:
 - Grid scope: `qml/scopeui/ScopeSplitGrid.qml`
+- Legend overlay: `qml/scopeui/ScopeLegend.qml`
 - Split picker: `qml/scopeui/ScopeSplitPicker.qml`
 - Context menu: `qml/scopeui/ScopeCommandMenu.qml`
 
@@ -80,17 +82,33 @@ Ví dụ:
 - Click vào một scope con để đặt scope đó làm `viewToolTarget`.
 - Các tool Zoom/Fit/Pan tác động lên scope đang active.
 
+## Legend cho từng đường
+
+- Mỗi scope hiển thị legend ở góc trên bên phải.
+- Mỗi dòng legend có:
+  - màu đường
+  - label `CH <channelId>`
+- Màu legend dùng cùng palette với renderer `ScopeView`, nên người dùng đối chiếu line/label trực tiếp.
+- Legend lấy danh sách channel đã phân bổ cho scope hiện tại (sau split vẫn đúng theo round-robin).
+- Click vào tên channel trong legend sẽ toggle ẩn/hiện line ngay trên scope tương ứng.
+- Khi bị ẩn, label vẫn giữ trên legend và hiển thị dạng gạch (strike-through).
+
 ## Right-click Context Menu
 
-Menu chuột phải gồm 2 phần:
+Menu chuột phải gồm 3 phần:
 
 1. `History Follow` (flag/toggle)
 - Bật: scope active ở auto-follow mode.
 - Tắt: scope active ở manual history mode.
 
-2. `Tools` tab
-- Tab đầu chỉ hiển thị các mục điều khiển mode/history.
-- Click `Tools` để chuyển sang tab danh sách command tools.
+2. `Inputs` tab
+- Click `Inputs` để mở danh sách toàn bộ input hiện có (`controller.channelIds`).
+- Mục đầu tiên là `All` để chọn nhanh toàn bộ input cho scope active.
+- Mỗi input (`CH <id>`) là một toggle để thêm/bớt input trên scope active.
+- Legend trong scope cập nhật theo danh sách input đang bật.
+
+3. `Tools` tab
+- Click `Tools` để chuyển sang danh sách command tools.
 - Click command tool để chạy và hiện popup kết quả.
 
 Command tool hiện tại:

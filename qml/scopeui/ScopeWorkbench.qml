@@ -6,6 +6,10 @@ Item {
 
     required property var controller
 
+    property int outerMargin: 20
+    property int titleBarHeight: 40
+    property int toolStripHeight: 52
+
     property int splitRows: 1
     property int splitCols: 1
     property bool splitPickerVisible: false
@@ -69,10 +73,10 @@ Item {
         id: scopeContainer
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.top: parent.top
+        anchors.top: toolStrip.bottom
         anchors.bottom: parent.bottom
-        anchors.margins: 20
-        anchors.topMargin: 56
+        anchors.margins: root.outerMargin
+        anchors.topMargin: 8
 
         ScopeSplitGrid {
             id: splitGrid
@@ -88,11 +92,10 @@ Item {
 
     ScopeToolbar {
         id: viewToolMenu
-        anchors.left: scopeContainer.left
-        anchors.top: scopeContainer.top
-        anchors.leftMargin: 8
-        anchors.topMargin: 8
-        z: 30
+        anchors.left: toolStrip.left
+        anchors.leftMargin: root.outerMargin
+        anchors.verticalCenter: toolStrip.verticalCenter
+        z: 46
         controller: root.controller
         splitRows: root.splitRows
         splitCols: root.splitCols
@@ -142,10 +145,11 @@ Item {
     }
 
     Rectangle {
+        id: titleBar
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
-        height: 40
+        height: root.titleBarHeight
         color: "#121923"
         opacity: 0.9
         z: 50
@@ -156,5 +160,17 @@ Item {
             font.pixelSize: 14
             text: "Realtime QSG Skeleton - 400Hz fake ingest"
         }
+    }
+
+    Rectangle {
+        id: toolStrip
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: titleBar.bottom
+        height: root.toolStripHeight
+        color: "#0f1722"
+        border.width: 1
+        border.color: "#2a3a4f"
+        z: 45
     }
 }

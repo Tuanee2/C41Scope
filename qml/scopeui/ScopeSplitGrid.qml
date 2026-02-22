@@ -11,6 +11,44 @@ Item {
 
     signal commandMenuRequested(real x, real y)
 
+    function normalizeChannels(values) {
+        const normalized = []
+        if (!values) {
+            return normalized
+        }
+
+        for (let i = 0; i < values.length; ++i) {
+            const value = Number(values[i])
+            if (!Number.isFinite(value)) {
+                continue
+            }
+
+            const channelId = Math.trunc(value)
+            if (normalized.indexOf(channelId) < 0) {
+                normalized.push(channelId)
+            }
+        }
+
+        normalized.sort(function(a, b) { return a - b })
+        return normalized
+    }
+
+    function toggleScopeHiddenChannel(scopeItem, channelId) {
+        if (!scopeItem) {
+            return
+        }
+
+        const hiddenChannels = root.normalizeChannels(scopeItem.hiddenChannelIds)
+        const index = hiddenChannels.indexOf(channelId)
+        if (index >= 0) {
+            hiddenChannels.splice(index, 1)
+        } else {
+            hiddenChannels.push(channelId)
+        }
+
+        scopeItem.hiddenChannelIds = hiddenChannels
+    }
+
     function channelsForCell(cellIndex) {
         const ids = root.controller ? root.controller.channelIds : []
         if (!ids || ids.length === 0) {
@@ -42,6 +80,7 @@ Item {
             delegate: Rectangle {
                 required property int index
                 readonly property bool isActive: root.controller && root.controller.viewToolTarget === scopeView
+                readonly property var scopeChannelIds: root.channelsForCell(index)
 
                 width: Math.max(120, (scopeGrid.width - (scopeGrid.spacing * (root.splitCols - 1))) / root.splitCols)
                 height: Math.max(90, (scopeGrid.height - (scopeGrid.spacing * (root.splitRows - 1))) / root.splitRows)
@@ -55,7 +94,7 @@ Item {
                     anchors.fill: parent
                     anchors.margins: 2
                     controller: root.controller
-                    channelIds: root.channelsForCell(index)
+                    channelIds: parent.scopeChannelIds
                     timeWindow: 5.0
                     liveMode: true
                     paused: false
@@ -65,6 +104,19 @@ Item {
                         if (index === 0 && root.controller && root.controller.viewToolTarget === null) {
                             root.controller.viewToolTarget = scopeView
                         }
+                    }
+                }
+
+                ScopeLegend {
+                    anchors.top: parent.top
+                    anchors.right: parent.right
+                    anchors.topMargin: 8
+                    anchors.rightMargin: 8
+                    z: 20
+                    channelIds: scopeView.channelIds
+                    hiddenChannelIds: scopeView.hiddenChannelIds
+                    onChannelLabelClicked: function(channelId) {
+                        root.toggleScopeHiddenChannel(scopeView, channelId)
                     }
                 }
 
